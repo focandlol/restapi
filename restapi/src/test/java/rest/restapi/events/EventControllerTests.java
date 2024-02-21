@@ -36,8 +36,8 @@ public class EventControllerTests {
 
     @Test
     public void createEvent() throws Exception {
-        Event event = Event.builder()
-                .id(100)
+        EventDto event = EventDto.builder()
+                //.id(100)
                 .name("kkm")
                 .description("rest api")
                 .beginEnrollmentDateTime(LocalDateTime.of(2011,11,11,11,11))
@@ -48,8 +48,8 @@ public class EventControllerTests {
                 .maxPrice(200)
                 .limitOfEnrollment(100)
                 .location("asdfasdf")
-                .free(true)
-                .offline(false)
+               // .free(true)
+               // .offline(false)
                 .build();
 
         //event.setId(10);
@@ -91,6 +91,16 @@ public class EventControllerTests {
                         .accept(MediaTypes.HAL_JSON)
                         .content(objectMapper.writeValueAsString(event)))
                 .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void createEvent_Bad_Request_Empty_Input() throws Exception {
+        EventDto eventDto = EventDto.builder().build();
+
+        mockMvc.perform(post("/api/events")
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .content(objectMapper.writeValueAsString(eventDto)))
                 .andExpect(status().isBadRequest());
     }
 }
