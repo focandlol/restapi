@@ -40,9 +40,15 @@ public class EventController {
             return ResponseEntity.badRequest().body(errors);
         }
         Event event = modelMapper.map(eventDto, Event.class);
+        event.update();
         Event newEvent = eventRepository.save(event);
-        URI createUri = linkTo(EventController.class).slash(newEvent.getId()).toUri();
+        WebMvcLinkBuilder selfLinkBuilder = linkTo(EventController.class).slash(newEvent.getId());
+        URI createUri = selfLinkBuilder.toUri();
 
-        return ResponseEntity.created(createUri).body(event);
+        EventResource eventResource = new EventResource(event);
+        eventResource.add(linkTo(EventController.class).withRel("query-events"));
+        //eventResource.add(selfLinkBuilder.withSelfRel());
+        eventResource.add(selfLinkBuilder.withRel("update-events"));
+        return ResponseEntity.created(createUri).body(eventResource);
     }
 }
