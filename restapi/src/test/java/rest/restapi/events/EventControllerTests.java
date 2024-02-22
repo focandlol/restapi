@@ -84,7 +84,8 @@ public class EventControllerTests {
                 .andDo(document("create-event",
                        links(linkWithRel("self").description("link to self"),
                                linkWithRel("query-events").description("link to query events"),
-                               linkWithRel("update-events").description("link to query update an existing event")
+                               linkWithRel("update-events").description("link to query update an existing event"),
+                               linkWithRel("profile").description("link to profile event")
                                ),
                        requestHeaders (
                             headerWithName(HttpHeaders.ACCEPT).description("accept header"),
@@ -124,7 +125,8 @@ public class EventControllerTests {
                                 fieldWithPath("eventStatus").description("eventStatus"),
                                 fieldWithPath("_links.self.href").description("link to self"),
                                 fieldWithPath("_links.query-events.href").description("link to query-events"),
-                                fieldWithPath("_links.update-events.href").description("link to update existing event")
+                                fieldWithPath("_links.update-events.href").description("link to update existing event"),
+                                fieldWithPath("_links.profile.href").description("link to profile")
                         )
                 ));
     }
@@ -193,11 +195,13 @@ public class EventControllerTests {
                         .content(objectMapper.writeValueAsString(event)))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$[0].objectName").exists())
+                .andExpect(jsonPath("errors[0].objectName").exists())
                 //.andExpect(jsonPath("$[0].field").exists())
-                .andExpect(jsonPath("$[0].defaultMessage").exists())
-                .andExpect(jsonPath("$[0].code").exists());
+                .andExpect(jsonPath("errors[0].defaultMessage").exists())
+                .andExpect(jsonPath("errors[0].code").exists())
+                .andExpect(jsonPath("_links.index").exists());
                 //.andExpect(jsonPath("$[0].rejectedValue").exists());
+
     }
 
 }
