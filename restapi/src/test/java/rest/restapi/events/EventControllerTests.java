@@ -1,5 +1,6 @@
 package rest.restapi.events;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.DisplayName;
@@ -26,8 +27,7 @@ import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.li
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.links;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -230,12 +230,155 @@ public class EventControllerTests {
 
     }
 
-    private void generateEvent(int index) {
+    @Test
+    @DisplayName("기존의 이벤트를 하나 조회하기")
+    public void getEvent() throws Exception {
+        Event event = generateEvent(100);
+        mockMvc.perform(get("/api/events/{id}",event.getId()))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("name").exists())
+                .andExpect(jsonPath("id").exists())
+                .andExpect(jsonPath("_links.self").exists())
+                .andExpect(jsonPath("_links.profile").exists())
+                .andDo(document("get-an-event"));
+    }
+
+    @Test
+    @DisplayName("없는 이벤트는 조회했을 때 404 응답받기")
+    public void getEvent404() throws Exception {
+        mockMvc.perform(get("/api/events/1188"))
+                .andDo(print())
+                .andExpect(status().isNotFound())
+               ;
+    }
+
+    @Test
+    @DisplayName("이벤트 수정하기")
+    public void updateEvent() throws Exception {
+        Event event = generateEvent(1000);
+
+        EventDto eventDto = EventDto.builder()
+                //.id(100)
+                .name("kkm")
+                .description("rest api")
+                .beginEnrollmentDateTime(LocalDateTime.of(2011,11,11,11,11))
+                .closeEnrollmentDateTime(LocalDateTime.of(2012,12,12,11,11))
+                .beginEventDateTime(LocalDateTime.of(2013,12,12,11,11))
+                .endEventDateTime(LocalDateTime.of(2014,12,12,11,11))
+                .basePrice(100)
+                .maxPrice(200)
+                .limitOfEnrollment(100)
+                .location("asdfasdf")
+                // .free(true)
+                // .offline(false)
+                .build();
+
+        mockMvc.perform(put("/api/events/{id}",event.getId())
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .accept(MediaTypes.HAL_JSON)
+                        .content(objectMapper.writeValueAsString(eventDto)))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("id").exists())
+                .andExpect(jsonPath("name").value("kkm"))
+                .andExpect(jsonPath("_links.self").exists())
+                .andExpect(jsonPath("_links.profile").exists())
+                .andDo(document("update-event"));
+
+    }
+
+    @Test
+    @DisplayName("수정하려는 이벤트가 없는 경우")
+    public void updateEvent404() throws Exception {
+        EventDto eventDto = EventDto.builder()
+                //.id(100)
+                .name("kkm")
+                .description("rest api")
+                .beginEnrollmentDateTime(LocalDateTime.of(2011,11,11,11,11))
+                .closeEnrollmentDateTime(LocalDateTime.of(2012,12,12,11,11))
+                .beginEventDateTime(LocalDateTime.of(2013,12,12,11,11))
+                .endEventDateTime(LocalDateTime.of(2014,12,12,11,11))
+                .basePrice(100)
+                .maxPrice(200)
+                .limitOfEnrollment(100)
+                .location("asdfasdf")
+                // .free(true)
+                // .offline(false)
+                .build();
+
+        mockMvc.perform(put("/api/events/123123")
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .accept(MediaTypes.HAL_JSON)
+                        .content(objectMapper.writeValueAsString(eventDto)))
+                .andDo(print())
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("입력 데이터(데이터 바인팅)가 이상한 경우")
+    public void updateEvent400() throws Exception {
+        Event event = generateEvent(1000);
+
+        EventDto eventDto = EventDto.builder()
+                //.id(100)
+                .name("kkm")
+                .description("rest api")
+                .beginEnrollmentDateTime(LocalDateTime.of(2011,11,11,11,11))
+                .closeEnrollmentDateTime(LocalDateTime.of(2012,12,12,11,11))
+                .beginEventDateTime(LocalDateTime.of(2013,12,12,11,11))
+                //.endEventDateTime(LocalDateTime.of(2014,12,12,11,11))
+                .basePrice(100)
+                .maxPrice(200)
+                .limitOfEnrollment(100)
+                .location("asdfasdf")
+                // .free(true)
+                // .offline(false)
+                .build();
+
+        mockMvc.perform(put("/api/events/{id}",event.getId())
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .accept(MediaTypes.HAL_JSON)
+                        .content(objectMapper.writeValueAsString(eventDto)))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("도메인 로직으로 데이터 검증 실패")
+    public void updateEvent400_domain() throws Exception {
+        Event event = generateEvent(1000);
+
+        EventDto eventDto = EventDto.builder()
+                //.id(100)
+                .name("kkm")
+                .description("rest api")
+                .beginEnrollmentDateTime(LocalDateTime.of(2011,11,11,11,11))
+                .closeEnrollmentDateTime(LocalDateTime.of(2012,12,12,11,11))
+                .beginEventDateTime(LocalDateTime.of(2014,12,12,11,11))
+                .endEventDateTime(LocalDateTime.of(2013,12,12,11,11))
+                .basePrice(100)
+                .maxPrice(200)
+                .limitOfEnrollment(100)
+                .location("asdfasdf")
+                // .free(true)
+                // .offline(false)
+                .build();
+
+        mockMvc.perform(put("/api/events/{id}",event.getId())
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .accept(MediaTypes.HAL_JSON)
+                        .content(objectMapper.writeValueAsString(eventDto)))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    private Event generateEvent(int index) {
         Event event = Event.builder()
                 .name("event " + index)
                 .description("test event")
                 .build();
-        eventRepository.save(event);
+        return eventRepository.save(event);
     }
 
 }

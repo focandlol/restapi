@@ -15,15 +15,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.Errors;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 import rest.restapi.common.ErrorsResource;
 
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
@@ -70,6 +68,42 @@ public class EventController {
         var pagedResources = assembler.toModel(page,e -> new EventResource(e));
         pagedResources.add(Link.of("/docs/index.html#resource-events-create").withRel("profile"));
         return ResponseEntity.ok(pagedResources);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity getEvent(@PathVariable Integer id){
+        Optional<Event> optionalEvent = eventRepository.findById(id);
+        if(optionalEvent.isEmpty()){
+            return ResponseEntity.notFound().build();
+        }
+        Event event = optionalEvent.get();
+        EventResource eventResource = new EventResource(event);
+        eventResource.add(Link.of("/docs/index.html#resource-events-create").withRel("profile"));
+        return ResponseEntity.ok(eventResource);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity updateEvent(@PathVariable Integer id,@RequestBody @Valid EventDto eventDto,Errors errors){
+        System.out.println("eventDto = " + eventDto);
+        if(errors.hasErrors()){
+            return badRequest(errors);
+            // return ResponseEntity.badRequest().body(errors);
+        }
+        eventValidator.validate(eventDto,errors);
+        if(errors.hasErrors()){
+            return badRequest(errors);
+            //return ResponseEntity.badRequest().body(errors);
+        }
+        Optional<Event> optionalEvent = eventRepository.findById(id);
+        if(optionalEvent.isEmpty()){
+            return ResponseEntity.notFound().build();
+        }
+        Event event = optionalEvent.get();
+        modelMapper.map(eventDto,event);
+        Event savedEvent = eventRepository.save(event);
+        EventResource eventResource = new EventResource(savedEvent);
+        eventResource.add(Link.of("/docs/index.html#resource-events-create").withRel("profile"));
+        return ResponseEntity.ok(eventResource);
     }
 
     private static ResponseEntity<ErrorsResource> badRequest(Errors errors) {
