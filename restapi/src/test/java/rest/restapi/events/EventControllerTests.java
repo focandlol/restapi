@@ -231,7 +231,7 @@ public class EventControllerTests {
     }
 
     @Test
-    @DisplayName("기존의 이벤트를 하나 조회하기")
+    @DisplayName("기존의 이벤트를 하나 조회")
     public void getEvent() throws Exception {
         Event event = generateEvent(100);
         mockMvc.perform(get("/api/events/{id}",event.getId()))
