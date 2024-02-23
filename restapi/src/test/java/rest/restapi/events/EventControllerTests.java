@@ -17,6 +17,7 @@ import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import rest.restapi.common.BaseControllerTest;
 import rest.restapi.common.RestDocsConfiguration;
 
 import java.time.LocalDateTime;
@@ -33,17 +34,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 //@WebMvcTest
-@SpringBootTest
-@AutoConfigureMockMvc
-@AutoConfigureRestDocs
-@Import(RestDocsConfiguration.class)
-public class EventControllerTests {
 
-    @Autowired
-    MockMvc mockMvc;
+public class EventControllerTests extends BaseControllerTest {
 
-    @Autowired
-    ObjectMapper objectMapper;
+
 
     @Autowired
     EventRepository eventRepository;
