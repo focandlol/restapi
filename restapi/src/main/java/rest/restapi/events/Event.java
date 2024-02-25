@@ -2,6 +2,7 @@ package rest.restapi.events;
 
 import jakarta.persistence.*;
 import lombok.*;
+import rest.restapi.accounts.Account;
 
 import java.time.LocalDateTime;
 
@@ -31,6 +32,9 @@ public class Event {
     private boolean free;
     @Enumerated(EnumType.STRING)
     private EventStatus eventStatus;
+
+    @ManyToOne
+    private Account account;
 
     public void update(){
         if(basePrice == 0 && maxPrice ==0){
