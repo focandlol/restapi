@@ -46,6 +46,7 @@ class AccountServiceTest {
         UserDetailsService userDetailService = accountService;
         UserDetails userDetails = userDetailService.loadUserByUsername(username);
 
+
         assertThat(passwordEncoder.matches(password,userDetails.getPassword())).isTrue();
     }
 
