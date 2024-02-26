@@ -1,6 +1,6 @@
 package rest.restapi.accounts;
 
-import jakarta.persistence.*;
+import javax.persistence.*;
 import lombok.*;
 
 import java.util.Set;

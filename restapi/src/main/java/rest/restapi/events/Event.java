@@ -1,6 +1,6 @@
 package rest.restapi.events;
 
-import jakarta.persistence.*;
+import javax.persistence.*;
 import lombok.*;
 import rest.restapi.accounts.Account;
 
