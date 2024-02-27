@@ -25,6 +25,7 @@ import rest.restapi.accounts.Account;
 import rest.restapi.accounts.AccountRepository;
 import rest.restapi.accounts.AccountRole;
 import rest.restapi.accounts.AccountService;
+import rest.restapi.common.AppProperties;
 import rest.restapi.common.BaseControllerTest;
 import rest.restapi.common.RestDocsConfiguration;
 
@@ -57,6 +58,9 @@ public class EventControllerTests extends BaseControllerTest {
 
     @Autowired
     AccountRepository accountRepository;
+
+    @Autowired
+    AppProperties appProperties;
 
     @BeforeEach
     public void setUp(){
@@ -155,21 +159,19 @@ public class EventControllerTests extends BaseControllerTest {
     }
 
     private String getAccessToken() throws Exception {
-        String username = "kk";
-        String password = "kk";
+
         Account kk = Account.builder()
-                .email(username)
-                .password(password)
+                .email(appProperties.getUserUsername())
+                .password(appProperties.getUserPassword())
                 .roles(Set.of(AccountRole.ADMIN, AccountRole.USER))
                 .build();
         accountService.saveAccount(kk);
-        String clientId = "myApp";
-        String clientSecret = "pass";
+
 
         ResultActions perform = mockMvc.perform(post("/oauth/token")
-                .with(httpBasic(clientId, clientSecret))
-                .param("username", username)
-                .param("password", password)
+                .with(httpBasic(appProperties.getClientId(), appProperties.getClientSecret()))
+                .param("username", appProperties.getUserUsername())
+                .param("password", appProperties.getUserPassword())
                 .param("grant_type", "password"));
 
         MockHttpServletResponse response = perform.andReturn().getResponse();
