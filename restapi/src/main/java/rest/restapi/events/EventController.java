@@ -48,7 +48,7 @@ public class EventController {
     public ResponseEntity createEvent(@RequestBody @Valid EventDto eventDto, Errors errors,
                                       @CurrentUser Account account){
 
-
+        log.info(account.getEmail());
         log.info("EventController createEvent");
         if(errors.hasErrors()){
             return badRequest(errors);
@@ -122,7 +122,7 @@ public class EventController {
             return ResponseEntity.notFound().build();
         }
         Event event = optionalEvent.get();
-        if(!event.getAccount().equals(account)){
+        if(!account.equals(event.getAccount())){
             return new ResponseEntity(HttpStatus.UNAUTHORIZED);
         }
         modelMapper.map(eventDto,event);
